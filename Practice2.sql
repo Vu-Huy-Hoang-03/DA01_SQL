@@ -9,7 +9,8 @@ SELECT ( COUNT(*) - COUNT(DISTINCT city) )
 FROM Station
 
 -- Ex3
-
+SELECT CEILING(ABS(AVG(REPLACE(salary,'0', '')) - AVG(salary)))
+FROM Employees
 
 -- Ex4
 SELECT ROUND(CAST(SUM(item_count * order_occurrences) / SUM(order_occurrences) as DECIMAL), 1)
