@@ -37,15 +37,28 @@ GROUP BY sender_id
 ORDER BY COUNT(message_id) DESC
 LIMIT 2
 
+SELECT sender_id, COUNT(message_id) as message_count
+FROM messages
+WHERE EXTRACT(month FROM DATE(sent_date)) =8
+        AND BETWEEN  EXTRACT(year FROM DATE(sent_date)) =2022
+GROUP BY sender_id
+ORDER BY COUNT(message_id) DESC
+LIMIT 2
+
 -- Ex6
 SELECT tweet_id
 FROM tweets
-WHERE LENGTH(content)>15x6
+WHERE LENGTH(content)>15
 
 -- Ex7
 select activity_date as day, COUNT(DISTINCT user_id) as active_users
 from activity
 where activity_date between '2019-06-27' AND '2019-07-27'
+group by activity_date
+
+select activity_date as day, COUNT(DISTINCT user_id) as active_users
+from activity
+where datediff('2019-07-27', activity_date) <=30 and activity_date <= '2019-07-27'
 group by activity_date
 
 -- Ex8
