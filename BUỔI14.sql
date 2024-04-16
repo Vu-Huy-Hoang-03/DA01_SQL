@@ -178,3 +178,7 @@ SELECT	customer_id, amount, payment_date,
 		LEAD(payment_date) OVER (PARTITION BY customer_id ORDER BY payment_date) as last_date
 FROM payment
 
+
+/* viết truy vấn trả về DT trong ngày và DT của ngày hôm trước
+	-> tính % tăng trưởng */
+
