@@ -181,6 +181,7 @@ FROM payment
 
 /* viết truy vấn trả về DT trong ngày và DT của ngày hôm trước
 	-> tính % tăng trưởng */
+-- CTE: bảng gồm ngày - DT theo ngày
 WITH day_revenue AS (
 SELECT	DATE(payment_date) as day, SUM(amount) as revenue
 FROM payment
@@ -189,5 +190,11 @@ ORDER BY DATE(payment_date)
 )
 SELECT	day, revenue,
 		LAG(day) OVER(ORDER BY day) as previous_day,
-		LAG(revenue) OVER(ORDER BY day) as previous_revenue	
+		LAG(revenue) OVER(ORDER BY day) as previous_revenue,
+		ROUND( 
+		(
+			( revenue - (LAG(revenue) OVER(ORDER BY day)) )
+			/( LAG(revenue) OVER(ORDER BY day) )
+			 )*100
+		,2) as growth_percent
 FROM day_revenue
