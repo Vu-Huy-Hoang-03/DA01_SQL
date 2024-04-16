@@ -165,3 +165,16 @@ ON first.customer_id = last.customer_id
 
 /*	C3: FIRST_VALUE  */
 
+
+
+/* tìm chênh lệch giữa các lần thanh toán của từng KH */
+-- C1: rank date
+
+-- C2: LEAD - LAG
+SELECT	customer_id, amount, payment_date,
+		LAG(amount) OVER (PARTITION BY customer_id ORDER BY payment_date) as previous_amount,
+		LAG(payment_date) OVER (PARTITION BY customer_id ORDER BY payment_date) as previous_date,
+		LEAD(amount) OVER (PARTITION BY customer_id ORDER BY payment_date) as last_amount,
+		LEAD(payment_date) OVER (PARTITION BY customer_id ORDER BY payment_date) as last_date
+FROM payment
+
