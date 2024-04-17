@@ -196,8 +196,24 @@ INNER JOIN last as b
 ON a.customer_id=b.customer_id
 	
 /*	C3: FIRST_VALUE  */
-
-
+SELECT	customer_id, 
+		FIRST_VALUE(payment_date) OVER(
+						PARTITION BY customer_id
+						ORDER BY payment_date ASC
+						) as first_date,
+		FIRST_VALUE(amount) OVER(
+					PARTITION BY customer_id
+					ORDER BY payment_date ASC
+					) as first_amount,
+		FIRST_VALUE(payment_date) OVER(
+						PARTITION BY customer_id
+						ORDER BY payment_date DESC
+						) as last_date,
+		FIRST_VALUE(amount) OVER(
+					PARTITION BY customer_id
+					ORDER BY payment_date DESC
+					) as last_amount
+FROM payment
 
 /* tìm chênh lệch giữa các lần thanh toán của từng KH */
 -- C1: rank date
