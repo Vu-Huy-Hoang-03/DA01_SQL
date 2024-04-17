@@ -162,7 +162,39 @@ ON first.customer_id = last.customer_id
               => tìm ngày đầu tiên
     + CTE2: RANK () gom khối theo kh và xếp hạng theo ngày (DESC)
               => tìm ngày cuối = gần nhất  */
-
+WITH first AS(
+SELECT * FROM (
+		SELECT	customer_id, payment_date, 
+			amount as first_amount,	
+			RANK() OVER(
+					PARTITION BY customer_id
+					ORDER BY payment_date ASC
+					) as rank_first
+		FROM PAYMENT
+		) as tablet_1
+WHERE rank_first=1
+),
+last AS(
+SELECT * FROM (
+		SELECT	customer_id, payment_date, 
+			amount as last_amount,	
+			RANK() OVER(
+					PARTITION BY customer_id
+					ORDER BY payment_date DESC
+					) as rank_last
+		FROM payment
+		) as tablet_2
+WHERE rank_last=1
+)
+SELECT	a.customer_id, 
+	a.payment_date as first_date, 
+	a.first_amount,
+	b.payment_date as last_date, 
+	b.last_amount
+FROM first as a
+INNER JOIN last as b
+ON a.customer_id=b.customer_id
+	
 /*	C3: FIRST_VALUE  */
 
 
