@@ -163,3 +163,33 @@ WHERE ranking IN (1,2)
 
   
 EX8: -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/* output: artist_name (artists) + rank 
+_ rank về tần suất xuất hiện trong top 10 ranking */
+-- B1: CTE: top10 bxh + tên ca sĩsĩ
+-- B2: COUNT song_id gom khối theo artist_name
+-- B3: lấy KQ B2 làm bảng -> rank                  (không lồng được Window Functions)
+-- B4: lấy KQ B3 làm bảng -> WHERE rank<=5         (WHERE không chứa Window Functions)
+
+SELECT *
+FROM (
+  
+SELECT  DISTINCT  artist_name,
+                  DENSE_RANK() OVER(ORDER BY frequency DESC) as artist_rank
+FROM  (
+      WITH top_10 AS  (
+                      SELECT DISTINCT a.artist_name,
+                                      c.*
+                      FROM global_song_rank as c
+                      INNER JOIN songs as b ON b.song_id = c.song_id
+                      INNER JOIN artists as a ON a.artist_id = b.artist_id
+                      WHERE rank BETWEEN 1 AND 10 
+                      )
+      SELECT  artist_name,
+              COUNT(song_id) OVER(PARTITION BY artist_name) as frequency
+      FROM top_10
+      ) as EX12
+ORDER BY artist_rank
+
+) as EX10_2
+WHERE artist_rank <=5
+ORDER BY artist_rank ASC, artist_name ASC
