@@ -55,15 +55,16 @@ Ex2: ---------------------------------------------------------------------------
 /* output = % (loggin trong 2 ngày tiếp kể từ ngày đầu tiên) / COUNT(DISTINCT player_id) */
   
 -- B1: tìm ngày min mỗi id = MIN OVER(PARTITION BY player_id ORDER BY event_date)
--- B2: KQ B1 = CTEs + COUNT(CASE-WHEN) 0<diff<=2
+-- B2: KQ B1 = CTEs + COUNT(CASE-WHEN) 0<diff<2
 
 WITH min_diff AS (
 SELECT  *,
-        MIN(event_date) OVER(PARTITION BY player_id ORDER BY event_date) as min_date,
+        MIN(event_date) OVER(PARTITION BY player_id ORDER BY event_date) as min_date
 FROM activity
 ) 
 SELECT ROUND(1.0*
-            COUNT(DISTINCT CASE WHEN event_date - min_date < interval '2 days' THEN player_id END) 
+            COUNT(DISTINCT CASE WHEN event_date - min_date < 2 AND event_date - min_date > 0
+                                THEN player_id END) 
             / COUNT(DISTINCT player_id)
             ,2) as fraction
 FROM min_diff
@@ -74,12 +75,11 @@ Ex3: ---------------------------------------------------------------------------
 
 SELECT  id,
         CASE
+            WHEN id =(SELECT MAX(id) FROM Seat) and id%2 <> 0 THEN student
             WHEN id%2=0 THEN LAG(student) OVER(ORDER BY id)
-            WHEN id%2=1 THEN LEAD(student) OVER(ORDER BY id)
-            WHEN (SELECT MAX(id) FROM Seat WHERE id=a.id)%2=1 THEN student
+            WHEN id%2<>0 THEN LEAD(student) OVER(ORDER BY id)
         END as student
 FROM Seat as a
-
   
 Ex4: --------------------------------------------------------------------------------------------------------------------------------------------
 
