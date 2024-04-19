@@ -183,23 +183,39 @@ Ex8: ---------------------------------------------------------------------------
 /* output: product_id, price
 _ tính đến ngày 2019-08-16 */
 
--- B1: tìm giá max từng sp
+-- B1: tìm giá mới nhất từng sp = Correlated Subquery MAX(date) by products
 -- B2: CTE B1 + left join (tìm xem product nào NULL) -> CASE-WHEN
 
-WITH maxing AS (
-SELECT  product_id, MAX(new_price) as max_price
-FROM Products
-WHERE change_date <= '2019-08-16'
-GROUP BY product_id
+WITH newest AS (
+SELECT  product_id, 
+        new_price as newest_price
+FROM Products as a
+WHERE change_date = (
+                    SELECT MAX(change_date) FROM Products
+                    WHERE product_id = a.product_id
+                        AND change_date <= '2019-08-16'
+                    GROUP BY product_id
+                    )
 )
 
 SELECT DISTINCT a.product_id,
                 CASE
                     WHEN b.product_id IS NULL THEN 10
-                    ELSE b.max_price 
+                    ELSE b.newest_price 
                 END as price
 FROM Products as a
-LEFT JOIN maxing as b 
+LEFT JOIN newest as b 
 ON a.product_id = b.product_id
 ORDER BY a.product_id
+
+
+SELECT  product_id, 
+        new_price as newest_price
+FROM Products as a
+WHERE   change_date = (
+                        SELECT MAX(change_date) FROM Products
+                        WHERE product_id = a.product_id
+                            AND change_date <= '2019-08-16'
+                        GROUP BY product_id
+                        )
 
