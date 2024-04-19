@@ -201,5 +201,5 @@ SELECT DISTINCT a.product_id,
 FROM Products as a
 LEFT JOIN maxing as b 
 ON a.product_id = b.product_id
-
+ORDER BY a.product_id
 
