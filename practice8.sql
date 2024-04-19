@@ -82,17 +82,124 @@ SELECT  id,
 FROM Seat as a
   
 Ex4: --------------------------------------------------------------------------------------------------------------------------------------------
+/* output: visited_on , moving_amount + moving_average (6 ngày trước+ ngày hiện tại)
+_ KO hiện KQ 6 ngày đầu */
+-- B1: tính tổng theo ngày 
+-- B2: lấy KQ B1 làm bảng -> tính running SUM + AVG (kết hợp ROWS BETWEEN) 
+-- B3: CTEs KQ b1-b2 => rank>6 (để k hiện KQ 6 ngày đầu)
 
+WITH all_rank AS (
+SELECT  visited_on,
+        SUM(daily_amount) OVER(ORDER BY visited_on 
+                           ROWS BETWEEN 6 preceding AND current row
+                                ) as amount,
+        ROUND(AVG(daily_amount) OVER(ORDER BY visited_on 
+                                 ROWS BETWEEN 6 preceding AND current row
+                                    )
+            ,2) as average_amount,
+        ROW_NUMBER() OVER(ORDER BY visited_on) as ranking
+FROM (
+     SELECT visited_on, SUM(amount) as daily_amount
+     FROM customer
+     GROUP BY visited_on
+    ) as SUM_daily
+)
 
+SELECT  visited_on,
+        amount,
+        average_amount
+FROM all_rank
+WHERE ranking >6
+  
 
 Ex5: --------------------------------------------------------------------------------------------------------------------------------------------
+/* SUM(tiv_2016) 
+_ đk1: tiv_2015 giống với 1 hoặc nhiều tiv_2015 khác 
+_ đk2: thành phố phải khác nhau so với toàn bộ các pid khác */
+
+/* xác định giá trị giống + khác nhau 
+= COUNT([cộtA]) OVER(PARTITION BY [cộtA]) = đếm giá trị trong cột + gom khối theo cột đó 
+=> nếu có nhiều giá trị trùng nhau -> COUNT với giá trị đó sẽ >1 (do trong khối đó có nhiều giá trị giống nhau) */
+
+WITH count AS (
+SELECT  pid, tiv_2015, tiv_2016,
+        CONCAT(lat, lon) as location,
+        COUNT(CONCAT(lat,lon)) OVER(PARTITION BY CONCAT(lat,lon)) as count_location,
+        COUNT(tiv_2015) OVER(PARTITION BY tiv_2015) as count_15
+FROM Insurance
+) 
+
+SELECT ROUND(
+            CAST( SUM(tiv_2016) AS DECIMAL )
+            ,2) as tiv_2016
+FROM count
+WHERE count_location =1 AND count_15 >1
 
 
+Ex6: --------------------------------------------------------------------------------------------------------------------------------------------
+/* output: Department - Employee - Salary (top3 theo Department) */
+-- B1: DENSE_RANK salary theo khối Department
+      /* top three unique salaries => DENSE_RANK để rank + không nhảy cách */
+-- B2: CTEs B1 -> where rank<=3
 
+WITH rank_salary AS (
+SELECT  a.salary, a.departmentID,
+        a.name as Employee,
+        b.name,
+        DENSE_RANK() OVER(PARTITION BY departmentID
+                          ORDER BY salary DESC) as ranking
+FROM Employee as a
+INNER JOIN Department as b 
+ON a.departmentID = b.id 
+)
 
+SELECT  name as Department,
+        Employee,
+        salary
+FROM rank_salary
+WHERE ranking <=3
+  
 
+Ex7: --------------------------------------------------------------------------------------------------------------------------------------------  
+-- person_name - người cuối cùng lên xe
 
+--B1: tính running total weight by turn
+--B2: đk running_total <=1000 + limit 1
 
+WITH total_weight AS (
+SELECT  *,
+        SUM(weight) OVER(ORDER BY turn) as running_weight
+FROM Queue
+)
 
+SELECT person_name
+FROM total_weight
+WHERE running_weight <=1000
+ORDER BY turn DESC
+LIMIT 1
+
+  
+Ex8: --------------------------------------------------------------------------------------------------------------------------------------------
+/* output: product_id, price
+_ tính đến ngày 2019-08-16 */
+
+-- B1: tìm giá max từng sp
+-- B2: CTE B1 + left join (tìm xem product nào NULL) -> CASE-WHEN
+
+WITH maxing AS (
+SELECT  product_id, MAX(new_price) as max_price
+FROM Products
+WHERE change_date <= '2019-08-16'
+GROUP BY product_id
+)
+
+SELECT DISTINCT a.product_id,
+                CASE
+                    WHEN b.product_id IS NULL THEN 10
+                    ELSE b.max_price 
+                END as price
+FROM Products as a
+LEFT JOIN maxing as b 
+ON a.product_id = b.product_id
 
 
