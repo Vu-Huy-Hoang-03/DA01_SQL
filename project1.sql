@@ -19,7 +19,7 @@ ALTER TABLE SALES_DATASET_RFM_PRJ
 /* SET DATASTYLE : specifies how to format date/time output for the current session */
 SET datestyle = 'iso,mdy';  
 ALTER TABLE SALES_DATASET_RFM_PRJ
-ALTER COLUMN orderdate TYPE timestamp USING (test_2:: timestamp)    
+ALTER COLUMN orderdate TYPE timestamp USING (orderdate:: timestamp)    
 
 -- C2:
 ALTER TABLE SALES_DATASET_RFM_PRJ
