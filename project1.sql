@@ -10,7 +10,7 @@ ALTER TABLE SALES_DATASET_RFM_PRJ
 	ALTER COLUMN orderlinenumber TYPE SMALLINT USING(orderlinenumber::smallint),
 	ALTER COLUMN sales TYPE DECIMAL USING(sales::decimal),
 	ALTER COLUMN msrp TYPE SMALLINT USING(msrp::smallint),
-  ALTER COLUMN contactfullname TYPE TEXT
+  	ALTER COLUMN contactfullname TYPE TEXT
 
 /* chuyển đổi cột orderdate: dd/mm/yyyy -> yyyy-mmm-dd */
 -- datatype: timestamp - date
