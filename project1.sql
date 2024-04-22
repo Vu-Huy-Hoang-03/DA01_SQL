@@ -152,7 +152,8 @@ WHERE quantityordered IN (SELECT quantityordered FROM B2)
 	
 
 -- Ex6: --------------------------------------------------------------------------------------------------------------------------------------------------------- 
-
+CREATE TABLE sales_dataset_rfm_prj_clean
+AS( SELECT * FROM SALES_DATASET_RFM_PRJ )
 
 
 
