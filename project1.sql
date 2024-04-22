@@ -51,41 +51,112 @@ ADD COLUMN contactfirstname VARCHAR(50)
 UPDATE SALES_DATASET_RFM_PRJ
 SET contactfirstname = SUBSTRING(contactfullname,
 						POSITION('-' IN contactfullname)+1
-								)
+				)
 
 -- chữ cái đầu viết hoa
 UPDATE SALES_DATASET_RFM_PRJ 
 SET contactfirstname = CONCAT(
-							UPPER(LEFT(contactfirstname,1)),
-							SUBSTRING(contactfirstname,2)
-							)
+				UPPER(LEFT(contactfirstname,1)),
+				SUBSTRING(contactfirstname,2)
+			     )
 
 -- tách lastname
 UPDATE SALES_DATASET_RFM_PRJ
 SET contactlastname = LEFT(contactfullname,
-							LENGTH(contactfullname)
-							- (LENGTH (contactfirstname)+1)
-						  )
+					  LENGTH(contactfullname)
+					  - (LENGTH (contactfirstname)+1)
+			  )
   
 -- chữ cái đầu viết 
 UPDATE SALES_DATASET_RFM_PRJ 
 SET contactlastname = CONCAT(
-							UPPER(LEFT(contactlastname,1)),
-							SUBSTRING(contactlastname,2)
-							)
+				UPPER(LEFT(contactlastname,1)),
+				SUBSTRING(contactlastname,2)
+			    )
 
   
 -- Ex4: ---------------------------------------------------------------------------------------------------------------------------------------------------------
+-- thêm 3 cột
+ALTER TABLE SALES_DATASET_RFM_PRJ
+ADD COLUMN MONTH_ID SMALLINT,
+ADD COLUMN QTR_ID SMALLINT,
+ADD COLUMN YEAR_ID SMALLINT
+
+-- UPDATE data
+UPDATE SALES_DATASET_RFM_PRJ
+SET MONTH_ID = EXTRACT(MONTH from orderdate)
+
+UPDATE SALES_DATASET_RFM_PRJ
+SET QTR_ID = EXTRACT(QUARTER from orderdate)
+
+UPDATE SALES_DATASET_RFM_PRJ
+SET YEAR_ID = EXTRACT(YEAR from orderdate)
+
+	
+-- Ex5: ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- C1: BoxPlot
+
+-- B1: Q1 - Q3 - IQR
+WITH B1 AS (
+SELECT	PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY quantityordered) AS Q1,
+		PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY quantityordered) AS Q3,
+		PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY quantityordered)
+		- PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY quantityordered) AS IQR
+FROM SALES_DATASET_RFM_PRJ
+)
+,
+	
+-- B2: MIN - MAX
+B2 AS (
+SELECT	(Q1-1.5*IQR) AS min,
+		(Q3-1.5*IQR) AS max
+FROM B1
+)
+	
+-- B3: Outlier   						(bôi đen b1,2)
+SELECT * FROM SALES_DATASET_RFM_PRJ
+WHERE	quantityordered < (SELECT min FROM B2)
+		OR quantityordered > (SELECT max FROM B2)
+ORDER BY quantityordered
+	
+-- B4: Xóa Outlier						(bôi đen b1,2)
+DELETE FROM SALES_DATASET_RFM_PRJ
+WHERE 	quantityordered < (SELECT min FROM B2)
+		OR quantityordered > (SELECT max FROM B2)
 
 
-Ex: ---------------------------------------------------------------------------------------------------------------------------------------------------------
+-- C2: Z-Score
+-- B1: Xác định AVERAGE - STANDARD_DEVIATION
+WITH B1 AS (
+SELECT	*,
+		(SELECT AVG(quantityordered) as average 
+		 	FROM SALES_DATASET_RFM_PRJ),
+		(SELECT STDDEV(quantityordered) as standard_deviation 
+		 	FROM SALES_DATASET_RFM_PRJ)
+FROM SALES_DATASET_RFM_PRJ
+)
+,
+
+-- B2: Z-Score -> Outlier ABS() > 2-3
+B2 AS (
+SELECT	*,
+	(quantityordered - average) / standard_deviation as Z_Score
+FROM B1
+WHERE ABS((quantityordered - average) / standard_deviation) >2
+)
+
+-- B3: Xóa Outlier
+DELETE FROM SALES_DATASET_RFM_PRJ
+WHERE quantityordered IN (SELECT quantityordered FROM B2)
+	
+
+-- Ex6: --------------------------------------------------------------------------------------------------------------------------------------------------------- 
 
 
-Ex: --------------------------------------------------------------------------------------------------------------------------------------------------------- 
 
 
-Ex: ---------------------------------------------------------------------------------------------------------------------------------------------------------
-
+	
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
 /* chuyển dữ liệu date/time thành dạng "yyyy-mm-dd time" */
