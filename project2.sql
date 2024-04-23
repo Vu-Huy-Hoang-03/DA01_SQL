@@ -1,27 +1,27 @@
 -- ExII.1: 
 /* Thống kê tổng số lượng người mua và số lượng đơn hàng đã hoàn thành mỗi tháng (Từ 1/2019-4/2022) */
 -- Output: month_year ( yyyy-mm) , total_user, total_order
-SELECT  EXTRACT(YEAR FROM created_at) || '-' || EXTRACT(MONTH FROM created_at) as month_year,
+SELECT  FORMAT_DATE('%Y-%m', created_at) as month_year,
         COUNT(DISTINCT user_id) as total_user,
         COUNT(order_id) as total_order
 FROM bigquery-public-data.thelook_ecommerce.orders
 WHERE DATE(created_at) BETWEEN '2019-01-01' AND '2022-04-30'
       AND status = 'Complete'
-GROUP BY EXTRACT(YEAR FROM created_at) || '-' || EXTRACT(MONTH FROM created_at)
+GROUP BY FORMAT_DATE('%Y-%m', created_at)
 ORDER BY month_year
 
 
 -- ExII.2: 
 /* Thống kê giá trị đơn hàng trung bình và tổng số người dùng khác nhau mỗi tháng( Từ 1/2019-4/2022) */
 -- Output: month_year ( yyyy-mm), distinct_users, average_order_value
-SELECT  EXTRACT(YEAR FROM a.created_at) || '-' || EXTRACT(MONTH FROM a.created_at) as month_year,
+SELECT  FORMAT_DATE('%Y-%m', created_at) as month_year,
         COUNT(DISTINCT a.user_id) as distinct_user,
         AVG(b.sale_price) as average_order_value
 FROM bigquery-public-data.thelook_ecommerce.orders as a
 INNER JOIN bigquery-public-data.thelook_ecommerce.order_items as b
 ON a.order_id =b.order_id
 WHERE DATE(a.created_at) BETWEEN '2019-01-01' AND '2022-04-30'
-GROUP BY EXTRACT(YEAR FROM a.created_at) || '-' || EXTRACT(MONTH FROM a.created_at)
+GROUP BY FORMAT_DATE('%Y-%m', created_at)
 ORDER BY month_year
 
 
