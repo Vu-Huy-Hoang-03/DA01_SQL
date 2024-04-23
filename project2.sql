@@ -159,6 +159,38 @@ ORDER BY b.category,dates
 
 
 
+        
+-------------------------------
+select * from bigquery-public-data.thelook_ecommerce.orders
+select * from bigquery-public-data.thelook_ecommerce.order_items
+select * from bigquery-public-data.thelook_ecommerce.products
+
+
+
+SELECT  FORMAT_DATE('%m', c.created_at) as  month,
+        FORMAT_DATE('%Y', c.created_at) as  year,
+        b.category,
+        ROUND(
+              SUM(a.sale_price) OVER(PARTITION BY FORMAT_DATE('%m', c.created_at))
+             ,2) as TPV,
+        COUNT(a.order_id) OVER(PARTITION BY FORMAT_DATE('%m', c.created_at)) as TPO,
+
+
+        
+        ROUND(SUM(b.cost),2) as cost,
+        ROUND((SUM(a.sale_price) - SUM(b.cost)),2) as profit
+FROM bigquery-public-data.thelook_ecommerce.order_items as a
+INNER JOIN bigquery-public-data.thelook_ecommerce.products as b
+ON a.product_id = b.id
+INNER JOIN bigquery-public-data.thelook_ecommerce.orders as c
+ON a.order_id =c.order_id
+GROUP BY FORMAT_DATE('%Y-%m', a.created_at),
+         a.product_id,
+         b.name
+ORDER BY month_year, a.product_id  
+
+
+
 
 
 
