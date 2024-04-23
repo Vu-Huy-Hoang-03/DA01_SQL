@@ -14,14 +14,14 @@ ORDER BY month_year
 -- ExII.2: 
 /* Thống kê giá trị đơn hàng trung bình và tổng số người dùng khác nhau mỗi tháng( Từ 1/2019-4/2022) */
 -- Output: month_year ( yyyy-mm), distinct_users, average_order_value
-SELECT  FORMAT_DATE('%Y-%m', created_at) as month_year,
+SELECT  FORMAT_DATE('%Y-%m', a.created_at) as month_year,
         COUNT(DISTINCT a.user_id) as distinct_user,
         AVG(b.sale_price) as average_order_value
 FROM bigquery-public-data.thelook_ecommerce.orders as a
 INNER JOIN bigquery-public-data.thelook_ecommerce.order_items as b
 ON a.order_id =b.order_id
 WHERE DATE(a.created_at) BETWEEN '2019-01-01' AND '2022-04-30'
-GROUP BY FORMAT_DATE('%Y-%m', created_at)
+GROUP BY FORMAT_DATE('%Y-%m', a.created_at)
 ORDER BY month_year
 
 
