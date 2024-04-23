@@ -28,7 +28,7 @@ WHERE	customerid <> ''
 		AND CAST(unitprice AS DECIMAL) >0
 ),
   
--- B1_2 + 1_3: xóa dữ liệu NULL = row_number(1_2) và where>1 (1_3)
+-- B1_2 + 1_3: xóa dữ liệu NULL = row_number(1_2) và where=1 (1_3)
 B1_2 AS(
 SELECT	*,
 		ROW_NUMBER() OVER(
