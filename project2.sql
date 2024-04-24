@@ -156,11 +156,10 @@ GROUP BY FORMAT_DATE('%Y-%m-%d', a.created_at),
 ORDER BY b.category,dates
 
 
-
-
-
-        
--------------------------------
+-----------------------------------------------------------------------------------------------------------------
+III.
+-----------------------------------------------------------------------------------------------------------------
+-- ExIII.1:
 WITH B1 AS(
 SELECT  FORMAT_DATE('%m', c.created_at) as  month,
         FORMAT_DATE('%Y', c.created_at) as  year,
@@ -211,10 +210,9 @@ FROM B1
 ) 
 
 
+-- ExIII.2:
 
--------------------------------------------------------------
-
--- 45,286 dòng trùng
+-- B1_1: check + xóa dữ liệu trùng ___ 45,286 dòng trùng
 WITH B_1 AS (
 SELECT * FROM (
 select  *,
@@ -228,6 +226,7 @@ where status NOT IN ('Cancelled', 'Returned')
 WHERE stt=1
 )
 
+-- B2_1: (tìm ngày đầu mua =MIN) + (chọn cột dữ liệu cần dùng)
 , B2_1 AS(
 SELECT  created_at,
         MIN(created_at) OVER(PARTITION BY user_id) as first_date,
@@ -236,6 +235,7 @@ SELECT  created_at,
 FROM B_1
 )
 
+-- B2_2: (đổi date_type ngày đầu mua) + (tính chênh lệch theo tháng)
 , B2_2 AS(
 SELECT  FORMAT_DATE('%Y-%m', first_date) as cohort_date,
         (EXTRACT(YEAR FROM created_at) - EXTRACT(YEAR FROM first_date))*12
@@ -245,12 +245,32 @@ SELECT  FORMAT_DATE('%Y-%m', first_date) as cohort_date,
 FROM B2_1
 )
 
+-- B2_3: tính tổng DT, slg KH theo cohort_date và index 
+-- where index <=4
+, B2_3 AS(
 SELECT  cohort_date, index,
         SUM(sale_price) as revenue,
         COUNT(DISTINCT user_id) as customer,
 FROM B2_2
+where index <=4
 GROUP BY cohort_date, index
 ORDER BY cohort_date, index
+)
+
+-- B2_4: Cohort Chart = Pivot CASE-WHEN
+, B2_4 AS(
+SELECT  cohort_date,
+        SUM(CASE WHEN index = 1 then customer ELSE 0 END) as t_1,
+        SUM(CASE WHEN index = 2 then customer ELSE 0 END) as t_2,
+        SUM(CASE WHEN index = 3 then customer ELSE 0 END) as t_3,
+        SUM(CASE WHEN index = 4 then customer ELSE 0 END) as t_4
+FROM B2_3
+GROUP BY cohort_date
+ORDER BY cohort_date
+)
+
+
+
 
 
 
