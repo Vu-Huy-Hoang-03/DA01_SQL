@@ -190,6 +190,36 @@ GROUP BY FORMAT_DATE('%Y-%m', a.created_at),
 ORDER BY month_year, a.product_id  
 
 
+-------------------------------------------------------------
+
+-- 45,286 dòng trùng
+WITH B_1 AS (
+SELECT * FROM (
+select  *,
+        ROW_NUMBER() OVER(
+                          PARTITION BY order_id, user_id, product_id
+                          ORDER BY created_at DESC
+                        ) as stt
+from bigquery-public-data.thelook_ecommerce.order_items
+where status NOT IN ('Cancelled', 'Returned')
+) as tablet
+WHERE stt=1
+)
+
+, B2_1 AS(
+SELECT  created_at,
+        MIN(created_at) OVER(PARTITION BY user_id) as first_date,
+        user_id,
+        sale_price
+FROM B_1
+)
+
+SELECT  FORMAT_DATE('%Y-%m', first_date) as cohort_date,
+        (EXTRACT(YEAR FROM created_at) - EXTRACT(YEAR FROM first_date))*12
+        + (EXTRACT(MONTH FROM created_at) - EXTRACT(MONTH FROM first_date)) +1 as index,
+        user_id,
+        sale_price
+FROM B2_1
 
 
 
