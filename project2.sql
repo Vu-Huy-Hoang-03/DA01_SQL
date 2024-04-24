@@ -270,9 +270,23 @@ ORDER BY cohort_date
 )
 
 
+-- Retention Cohort
+-- CTE B2_4
+SELECT  cohort_date,
+        ROUND(100.00* t_1 / t_1 ,2) as t_1,
+        ROUND(100.00* t_2 / t_1 ,2) as t_2,
+        ROUND(100.00* t_3 / t_1 ,2) as t_3,
+        ROUND(100.00* t_4 / t_1 ,2) as t_4,
+FROM B2_4
 
-
-
+-- Churn Cohort
+-- CTE B2_4
+SELECT  cohort_date,
+        ROUND(100 - 100.00* t_1 / t_1 ,2) as t_1,
+        ROUND(100 - 100.00* t_2 / t_1 ,2) as t_2,
+        ROUND(100 - 100.00* t_3 / t_1 ,2) as t_3,
+        ROUND(100 - 100.00* t_4 / t_1 ,2) as t_4,
+FROM B2_4
 
 
 
