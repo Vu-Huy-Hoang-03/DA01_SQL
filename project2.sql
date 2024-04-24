@@ -236,12 +236,26 @@ SELECT  created_at,
 FROM B_1
 )
 
+, B2_2 AS(
 SELECT  FORMAT_DATE('%Y-%m', first_date) as cohort_date,
         (EXTRACT(YEAR FROM created_at) - EXTRACT(YEAR FROM first_date))*12
         + (EXTRACT(MONTH FROM created_at) - EXTRACT(MONTH FROM first_date)) +1 as index,
         user_id,
         sale_price
 FROM B2_1
+)
+
+SELECT  cohort_date, index,
+        SUM(sale_price) as revenue,
+        COUNT(DISTINCT user_id) as customer,
+FROM B2_2
+GROUP BY cohort_date, index
+ORDER BY cohort_date, index
+
+
+
+
+
 
 
 
