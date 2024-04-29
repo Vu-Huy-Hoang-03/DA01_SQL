@@ -156,8 +156,7 @@ GROUP BY DATE(a.created_at),b.category
 ORDER BY b.category,dates
 
 
-/* CREATING DATASET + COHORT ANALYSIS */
--- 1. Creating Dataset
+/* CREATING DATASET */
 -- B1:
 WITH B_1 AS (
 SELECT  EXTRACT(MONTH FROM c.created_at) as  month,
@@ -208,4 +207,68 @@ SELECT  *,
 FROM B_1
 ) as tablet
 
--- 2. Cohort Analysis
+/* Cohort Analysis */
+-- B1_1: Cleaning Data: remove NUll (0 Null) - Duplicate (45,286 duplicate)
+WITH B_1 AS (
+SELECT * FROM (
+select  *,
+        ROW_NUMBER() OVER(
+                          PARTITION BY order_id, user_id, product_id
+                          ORDER BY created_at DESC
+                        ) as stt
+from order_item
+where status NOT IN ('Cancelled', 'Returned')
+) as tablet
+WHERE stt=1
+)
+
+-- B2_1: find the first purchased date + selecting needed data
+, B2_1 AS(
+SELECT  created_at,
+        MIN(created_at) OVER(PARTITION BY user_id) as first_date,
+        user_id,
+        sale_price
+FROM B_1
+)
+
+-- B2_2: monthly difference from the first purchase time (index column)
+, B2_2 AS(
+SELECT  TO_CHAR(first_date, 'yyyy-mm') as cohort_date,
+        (EXTRACT(YEAR FROM created_at) - EXTRACT(YEAR FROM first_date))*12
+        + (EXTRACT(MONTH FROM created_at) - EXTRACT(MONTH FROM first_date)) +1 as index,
+        user_id,
+        sale_price
+FROM B2_1
+)
+
+-- B2_3: total revenue and total customer 
+-- group by first time purchasing (cohort_date) and index
+-- where index <=12
+, B2_3 AS(
+SELECT  cohort_date, index,
+        SUM(sale_price) as revenue,
+        COUNT(DISTINCT user_id) as customer
+FROM B2_2
+where index <=12
+GROUP BY cohort_date, index
+ORDER BY cohort_date, index
+)
+
+-- B2_4: Cohort Chart = Pivot CASE-WHEN
+SELECT  cohort_date,
+        SUM(CASE WHEN index = 1 then customer ELSE 0 END) as t1,
+        SUM(CASE WHEN index = 2 then customer ELSE 0 END) as t2,
+        SUM(CASE WHEN index = 3 then customer ELSE 0 END) as t3,
+        SUM(CASE WHEN index = 4 then customer ELSE 0 END) as t4,
+	SUM(CASE WHEN index = 5 then customer ELSE 0 END) as t5,
+        SUM(CASE WHEN index = 6 then customer ELSE 0 END) as t6,
+        SUM(CASE WHEN index = 7 then customer ELSE 0 END) as t7,
+        SUM(CASE WHEN index = 8 then customer ELSE 0 END) as t8,
+	SUM(CASE WHEN index = 9 then customer ELSE 0 END) as t9,
+        SUM(CASE WHEN index = 10 then customer ELSE 0 END) as t10,
+        SUM(CASE WHEN index = 11 then customer ELSE 0 END) as t11,
+        SUM(CASE WHEN index = 12 then customer ELSE 0 END) as t12
+FROM B2_3
+GROUP BY cohort_date
+ORDER BY cohort_date
+
