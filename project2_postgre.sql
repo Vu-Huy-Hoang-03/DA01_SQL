@@ -142,18 +142,18 @@ for each gender from January 2019 to April 2022 */
 -- Output: full_name, gender, age, tag (youngest-oldest)
 (SELECT	CONCAT(first_name, ' ', last_name) as full_name,
 	gender,
-	MIN(age) OVER(PARTITION BY gender) as age,
+	age,
 	'youngest' as tag
 FROM users as a
-WHERE age IN (SELECT MIN(age) FROM users)
+WHERE age IN (SELECT MIN(age) FROM users GROUP BY gender)
 	AND DATE(a.created_at) BETWEEN '2019-01-01' AND '2022-04-30')
 UNION ALL
 (SELECT	CONCAT(first_name, ' ', last_name) as full_name,
 	gender,
-	MAX(age) OVER(PARTITION BY gender) as age,
+	age,
 	'oldest' as tag
 FROM users as a
-WHERE age IN (SELECT MAX(age) FROM users)
+WHERE age IN (SELECT MAX(age) FROM users GROUP BY gender)
 	AND DATE(a.created_at) BETWEEN '2019-01-01' AND '2022-04-30')
 	
 /* Top 5 products with the highest profit each month (rank each product) */
