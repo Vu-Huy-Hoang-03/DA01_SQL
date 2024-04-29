@@ -77,8 +77,8 @@ where id IS NULL
 /* Amount of Customers and Orders each months from January 2019 to April 2022 */
 -- Output: month_year ( yyyy-mm) , total_user, total_order
 SELECT	TO_CHAR(created_at, 'yyyy-mm') as month_year,
-		COUNT(order_id) as total_order,
-		COUNT(DISTINCT user_id) as total_user
+	COUNT(order_id) as total_order,
+	COUNT(DISTINCT user_id) as total_user
 FROM orders
 WHERE DATE(created_at) BETWEEN '2019-01-01' AND '2022-04-30'
 GROUP BY TO_CHAR(created_at, 'yyyy-mm')
@@ -88,9 +88,9 @@ GROUP BY TO_CHAR(created_at, 'yyyy-mm')
 -- Output: month_year ( yyyy-mm), distinct_users, average_order_value
 SELECT	TO_CHAR(a.created_at, 'yyyy-mm') as month_year,
 		ROUND(
-			  AVG(b.sale_price)
-			,2) as average_order_value,
-		COUNT(DISTINCT a.user_id) as total_user
+		  AVG(b.sale_price)
+		,2) as average_order_value,
+	COUNT(DISTINCT a.user_id) as total_user
 FROM orders as a
 INNER JOIN order_item as b
 	ON a.order_id = b.order_id
@@ -101,17 +101,17 @@ GROUP BY TO_CHAR(a.created_at, 'yyyy-mm')
 for each gender from January 2019 to April 2022 */
 -- Output: full_name, gender, age, tag (youngest-oldest)
 (SELECT	CONCAT(first_name, ' ', last_name) as full_name,
-		gender,
-		MIN(age) OVER(PARTITION BY gender) as age,
-		'youngest' as tag
+	gender,
+	MIN(age) OVER(PARTITION BY gender) as age,
+	'youngest' as tag
 FROM users as a
 WHERE age IN (SELECT MIN(age) FROM users)
 	AND DATE(a.created_at) BETWEEN '2019-01-01' AND '2022-04-30')
 UNION ALL
 (SELECT	CONCAT(first_name, ' ', last_name) as full_name,
-		gender,
-		MAX(age) OVER(PARTITION BY gender) as age,
-		'oldest' as tag
+	gender,
+	MAX(age) OVER(PARTITION BY gender) as age,
+	'oldest' as tag
 FROM users as a
 WHERE age IN (SELECT MAX(age) FROM users)
 	AND DATE(a.created_at) BETWEEN '2019-01-01' AND '2022-04-30')
@@ -123,17 +123,17 @@ WHERE age IN (SELECT MAX(age) FROM users)
 -- B1: rank profit by month
 WITH B_1 AS(
 SELECT 	TO_CHAR(a.created_at, 'yyyy-mm') as month_year,
-		a.product_id,
-		b.name,
-		ROUND(
-			SUM(a.sale_price),2) as sales,
-		ROUND(
-			SUM(b.cost),2) as cost,
-		ROUND(
-			SUM(a.sale_price) - SUM(b.cost),2) as profit,
-		DENSE_RANK() OVER(
-						PARTITION BY TO_CHAR(a.created_at, 'yyyy-mm')
-						ORDER BY (SUM(a.sale_price) - SUM(b.cost)) DESC) as rank_per_month
+	a.product_id,
+	b.name,
+	ROUND(
+		SUM(a.sale_price),2) as sales,
+	ROUND(
+		SUM(b.cost),2) as cost,
+	ROUND(
+		SUM(a.sale_price) - SUM(b.cost),2) as profit,
+	DENSE_RANK() OVER(
+			PARTITION BY TO_CHAR(a.created_at, 'yyyy-mm')
+			ORDER BY (SUM(a.sale_price) - SUM(b.cost)) DESC) as rank_per_month
 FROM order_item as a
 INNER JOIN products as b
 	on a.product_id = b.id
@@ -278,11 +278,11 @@ SELECT  cohort_date,
         ROUND(100.00* t2 / t1 ,2) as t2,
         ROUND(100.00* t3 / t1 ,2) as t3,
         ROUND(100.00* t4 / t1 ,2) as t4,
-		ROUND(100.00* t5 / t1 ,2) as t5,
+	ROUND(100.00* t5 / t1 ,2) as t5,
         ROUND(100.00* t6 / t1 ,2) as t6,
         ROUND(100.00* t7 / t1 ,2) as t7,
         ROUND(100.00* t8 / t1 ,2) as t8,
-		ROUND(100.00* t9 / t1 ,2) as t9,
+	ROUND(100.00* t9 / t1 ,2) as t9,
         ROUND(100.00* t10 / t1 ,2) as t10,
         ROUND(100.00* t11 / t1 ,2) as t11,
         ROUND(100.00* t12 / t1 ,2) as t12
@@ -294,11 +294,11 @@ SELECT  cohort_date,
         ROUND(100 - 100.00* t2 / t1 ,2) as t2,
         ROUND(100 - 100.00* t3 / t1 ,2) as t3,
         ROUND(100 - 100.00* t4 / t1 ,2) as t4,
-		ROUND(100 - 100.00* t5 / t1 ,2) as t5,
+	ROUND(100 - 100.00* t5 / t1 ,2) as t5,
         ROUND(100 - 100.00* t6 / t1 ,2) as t6,
         ROUND(100 - 100.00* t7 / t1 ,2) as t7,
         ROUND(100 - 100.00* t8 / t1 ,2) as t8,
-		ROUND(100 - 100.00* t9 / t1 ,2) as t9,
+	ROUND(100 - 100.00* t9 / t1 ,2) as t9,
         ROUND(100 - 100.00* t10 / t1 ,2) as t10,
         ROUND(100 - 100.00* t11 / t1 ,2) as t11,
         ROUND(100 - 100.00* t12 / t1 ,2) as t12
