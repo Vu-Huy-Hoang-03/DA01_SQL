@@ -1,62 +1,62 @@
 -- Creating Tables & Importing Data
 CREATE TABLE order_item
 (
-	id numeric primary key,
-	order_id numeric,
-	user_id numeric,
-	product_id numeric ,
-	inventory_item_id numeric,
-	status varchar,
-	created_at  timestamp,
-	shipped_at timestamp,
-	delivered_at timestamp,
-	returned_at timestamp,
-	sale_price numeric
+id numeric primary key,
+order_id numeric,
+user_id numeric,
+product_id numeric ,
+inventory_item_id numeric,
+status varchar,
+created_at  timestamp,
+shipped_at timestamp,
+delivered_at timestamp,
+returned_at timestamp,
+sale_price numeric
 );
 	
 CREATE TABLE orders
 (
-	order_id numeric primary key,
-	user_id numeric,
-	status varchar,
-	gender varchar,
-	created_at  timestamp,
-	returned_at timestamp,
-	shipped_at timestamp,
-	delivered_at timestamp,
-	num_of_item numeric
+order_id numeric primary key,
+user_id numeric,
+status varchar,
+gender varchar,
+created_at  timestamp,
+returned_at timestamp,
+shipped_at timestamp,
+delivered_at timestamp,
+num_of_item numeric
 );
 
 CREATE TABLE products
 (
-	id numeric primary key,
-	cost numeric,
-	category varchar,
-	name varchar,
-	brand varchar,
-	retail_price numeric,
-	department varchar,
-	sku varchar,
-	distribution_center_id numeric
+id numeric primary key,
+cost numeric,
+category varchar,
+name varchar,
+brand varchar,
+retail_price numeric,
+department varchar,
+sku varchar,
+distribution_center_id numeric
 );
 
 CREATE TABLE users
 (
-	id numeric primary key,
-	first_name varchar,
-	last_name varchar,
-	email varchar,
-	age numeric, 
-	gender varchar,
-	state varchar,
-	street_address varchar,
-	postal_code varchar,
-	city varchar,
-	country varchar,
-	latitude numeric,
-	longitude numeric,
-	traffic_source varchar,
-	created_at timestamp
+id numeric primary key,
+first_name varchar,
+last_name varchar,
+email varchar,
+age numeric, 
+gender varchar,
+state varchar,
+street_address varchar,
+postal_code varchar,
+city varchar,
+country varchar,
+latitude numeric,
+longitude numeric,
+traffic_source varchar,
+created_at timestamp
 );
 
 
