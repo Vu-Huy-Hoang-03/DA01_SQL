@@ -61,6 +61,7 @@ created_at timestamp
 
 
 -- Cleaning & Structuring Data
+-- 0 values IS NULL
 select * from order_item
 where id is NULL
 
@@ -72,9 +73,44 @@ where id IS NULL
 
 select * from users
 where id IS NULL
-	
--- 0 values IS NULL
 
+-- 0 Duplicate Value
+SELECT * FROM (
+select  *,
+        ROW_NUMBER() OVER(
+                          PARTITION BY order_id, user_id, product_id, inventory_item_id
+                        ) as stt
+from order_item
+) as tablet
+WHERE stt>1;
+
+SELECT * FROM (
+select  *,
+        ROW_NUMBER() OVER(
+                          PARTITION BY order_id, user_id
+                        ) as stt
+from orders
+) as tablet
+WHERE stt>1;
+
+SELECT * FROM (
+select  *,
+        ROW_NUMBER() OVER(
+                          PARTITION BY id, cost, category, name
+                        ) as stt
+from products
+) as tablet
+WHERE stt>1;
+
+SELECT * FROM (
+select  *,
+        ROW_NUMBER() OVER(
+                          PARTITION BY id
+                        ) as stt
+from users
+) as tablet
+WHERE stt>1;
+	
 
 -- Analyzing
 /* Amount of Customers and Orders each months from January 2019 to April 2022 */
