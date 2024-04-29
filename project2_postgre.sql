@@ -70,6 +70,9 @@ where order_id is NULL
 select * from products
 where id IS NULL 
 
+select * from users
+where id IS NULL
+	
 -- 0 values IS NULL
 
 
