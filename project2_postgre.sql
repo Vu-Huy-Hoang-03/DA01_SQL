@@ -80,7 +80,8 @@ SELECT	TO_CHAR(created_at, 'yyyy-mm') as month_year,
 	COUNT(order_id) as total_order,
 	COUNT(DISTINCT user_id) as total_user
 FROM orders
-WHERE DATE(created_at) BETWEEN '2019-01-01' AND '2022-04-30'
+WHERE 	DATE(created_at) BETWEEN '2019-01-01' AND '2022-04-30'
+	AND status  = 'Complete'
 GROUP BY TO_CHAR(created_at, 'yyyy-mm')
 
 /* Average Order Value (AOV) and Monthly Active Customers 
