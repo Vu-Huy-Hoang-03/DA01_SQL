@@ -12,7 +12,7 @@ CREATE TABLE order_item
 	delivered_at timestamp,
 	returned_at timestamp,
 	sale_price numeric
-)
+);
 	
 CREATE TABLE orders
 (
@@ -25,7 +25,7 @@ CREATE TABLE orders
 	shipped_at timestamp,
 	delivered_at timestamp,
 	num_of_item numeric
-)
+);
 
 CREATE TABLE products
 (
@@ -38,7 +38,7 @@ CREATE TABLE products
 	department varchar,
 	sku varchar,
 	distribution_center_id numeric
-)
+);
 
 CREATE TABLE users
 (
@@ -57,7 +57,7 @@ CREATE TABLE users
 	longitude numeric,
 	traffic_source varchar,
 	created_at timestamp
-)
+);
 
 
 -- Cleaning & Structuring Data
