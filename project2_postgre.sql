@@ -155,6 +155,33 @@ UNION ALL
 FROM users as a
 WHERE age IN (SELECT MAX(age) FROM users GROUP BY gender)
 	AND DATE(a.created_at) BETWEEN '2019-01-01' AND '2022-04-30')
+
+-- analyzing the results
+-- Create temporary table for the above result
+CREATE TEMP TABLE customer_age
+AS (
+(SELECT	CONCAT(first_name, ' ', last_name) as full_name,
+	gender,
+	age,
+	'youngest' as tag
+FROM users as a
+WHERE age IN (SELECT MIN(age) FROM users GROUP BY gender)
+	AND DATE(a.created_at) BETWEEN '2019-01-01' AND '2022-04-30')
+UNION ALL
+(SELECT	CONCAT(first_name, ' ', last_name) as full_name,
+	gender,
+	age,
+	'oldest' as tag
+FROM users as a
+WHERE age IN (SELECT MAX(age) FROM users GROUP BY gender)
+	AND DATE(a.created_at) BETWEEN '2019-01-01' AND '2022-04-30')
+)
+
+-- analyzing	
+SELECT DISTINCT tag, gender, age, 
+		COUNT(full_name) OVER(PARTITION BY gender, tag)
+FROM customer_age
+
 	
 /* Top 5 products with the highest profit each month (rank each product) */
 -- Output: month_year ( yyyy-mm), product_id, product_name, 
