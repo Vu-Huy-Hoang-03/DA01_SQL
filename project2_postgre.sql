@@ -215,9 +215,9 @@ SELECT  EXTRACT(MONTH FROM c.created_at) as  month,
               ,2) as profit_to_cost_ratio
 FROM order_item as a
 INNER JOIN products as b
-ON a.product_id = b.id
+	ON a.product_id = b.id
 INNER JOIN orders as c
-		ON a.order_id =c.order_id
+	ON a.order_id =c.order_id
 GROUP BY year, month, b.category
 ORDER BY year, month, b.category
 )
