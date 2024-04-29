@@ -139,7 +139,71 @@ INNER JOIN products as b
 	on a.product_id = b.id
 GROUP BY TO_CHAR(a.created_at, 'yyyy-mm'),a.product_id,b.name 
 )
+-- B2: CTEs B1 with WHERE rank<=5
 SELECT * FROM B_1
-WHERE rank_per_month <5
+WHERE rank_per_month <=5
 
--------  
+/* Revenue for each category: total daily revenue for each product category 
+over the past 3 months (assuming the current date is 15/4/2022) */
+SELECT  b.category,
+       	DATE(a.created_at) as dates,
+        ROUND(SUM(a.sale_price),2) as profit
+FROM order_item as a
+INNER JOIN products as b
+ON a.product_id = b.id
+WHERE DATE(a.created_at) BETWEEN '2022-01-15' AND '2022-04-15'
+GROUP BY DATE(a.created_at),b.category
+ORDER BY b.category,dates
+
+
+/* CREATING DATASET + COHORT ANALYSIS */
+-- 1. Creating Dataset
+-- B1:
+WITH B_1 AS (
+SELECT  EXTRACT(MONTH FROM c.created_at) as  month,
+        EXTRACT(YEAR FROM c.created_at) as  year,
+        b.category,
+        ROUND(
+              SUM(a.sale_price),2) as TPV,
+        COUNT(a.order_id) as TPO,
+        ROUND(
+              SUM(b.cost),2) as total_cost,
+        ROUND(
+              SUM(a.sale_price)-SUM(b.cost),2) as total_profit,
+        ROUND(1.00*
+              (SUM(a.sale_price)-SUM(b.cost))
+              / SUM(b.cost)
+              ,2) as profit_to_cost_ratio
+FROM order_item as a
+INNER JOIN products as b
+ON a.product_id = b.id
+INNER JOIN orders as c
+		ON a.order_id =c.order_id
+GROUP BY year, month, b.category
+ORDER BY year, month, b.category
+)
+-- B2: 
+SELECT  month,
+        year,
+        category,
+        TPV,
+        TPO,
+        COALESCE(
+        ROUND(100.00*
+                (TPV - prev_TPV) / prev_TPV
+                ,2) || '%'
+                ,'0.00%') as Revenue_growth,
+        COALESCE(
+        ROUND(100.00*
+                (TPO - prev_TPO) / prev_TPV
+                ,2) || '%' 
+                ,'0.00%') as Order_growth,
+        total_cost,
+        total_profit,
+        profit_to_cost_ratio
+FROM (
+SELECT  *,
+        LAG(TPV) OVER(PARTITION BY category ORDER BY year,month) as prev_TPV,
+        LAG(TPO) OVER(PARTITION BY category ORDER BY year,month) as prev_TPO
+FROM B_1
+) as tablet
