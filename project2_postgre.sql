@@ -207,3 +207,5 @@ SELECT  *,
         LAG(TPO) OVER(PARTITION BY category ORDER BY year,month) as prev_TPO
 FROM B_1
 ) as tablet
+
+-- 2. Cohort Analysis
