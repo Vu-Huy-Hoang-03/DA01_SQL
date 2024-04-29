@@ -248,47 +248,34 @@ FROM B_1
 ) as tablet
 
 /* Cohort Analysis */
--- B1_1: Cleaning Data: remove NUll (0 Null) - Duplicate (45,286 duplicate)
-WITH B_1 AS (
-SELECT * FROM (
-select  *,
-        ROW_NUMBER() OVER(
-                          PARTITION BY order_id, user_id, product_id
-                          ORDER BY created_at DESC
-                        ) as stt
-from order_item
-where status NOT IN ('Cancelled', 'Returned')
-) as tablet
-WHERE stt=1
-)
-
--- B2_1: find the first purchased date + selecting needed data
-, B2_1 AS(
+-- B_1: find the first purchased date + selecting needed data
+WITH B_1 AS(
 SELECT  created_at,
         MIN(created_at) OVER(PARTITION BY user_id) as first_date,
         user_id,
         sale_price
-FROM B_1
+FROM order_item
+WHERE status NOT IN ('Cancelled', 'Returned')
 )
 
--- B2_2: monthly difference from the first purchase time (index column)
-, B2_2 AS(
+-- B_2: monthly difference from the first purchase time (index column)
+, B_2 AS(
 SELECT  TO_CHAR(first_date, 'yyyy-mm') as cohort_date,
         (EXTRACT(YEAR FROM created_at) - EXTRACT(YEAR FROM first_date))*12
         + (EXTRACT(MONTH FROM created_at) - EXTRACT(MONTH FROM first_date)) +1 as index,
         user_id,
         sale_price
-FROM B2_1
+FROM B_1
 )
 
 -- B2_3: total revenue and total customer 
 -- group by first time purchasing (cohort_date) and index
 -- where index <=12
-, B2_3 AS(
+, B_3 AS(
 SELECT  cohort_date, index,
         SUM(sale_price) as revenue,
         COUNT(DISTINCT user_id) as customer
-FROM B2_2
+FROM B_2
 where index <=12
 GROUP BY cohort_date, index
 ORDER BY cohort_date, index
@@ -308,7 +295,7 @@ SELECT  cohort_date,
         SUM(CASE WHEN index = 10 then customer ELSE 0 END) as t10,
         SUM(CASE WHEN index = 11 then customer ELSE 0 END) as t11,
         SUM(CASE WHEN index = 12 then customer ELSE 0 END) as t12
-FROM B2_3
+FROM B_3
 GROUP BY cohort_date
 ORDER BY cohort_date
 
@@ -326,7 +313,7 @@ SELECT  cohort_date,
         ROUND(100.00* t10 / t1 ,2) as t10,
         ROUND(100.00* t11 / t1 ,2) as t11,
         ROUND(100.00* t12 / t1 ,2) as t12
-FROM B2_4
+FROM B_4
 
 -- Churn Cohort
 SELECT  cohort_date,
@@ -342,4 +329,4 @@ SELECT  cohort_date,
         ROUND(100 - 100.00* t10 / t1 ,2) as t10,
         ROUND(100 - 100.00* t11 / t1 ,2) as t11,
         ROUND(100 - 100.00* t12 / t1 ,2) as t12
-FROM B2_4
+FROM B_4
