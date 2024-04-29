@@ -272,3 +272,34 @@ FROM B2_3
 GROUP BY cohort_date
 ORDER BY cohort_date
 
+-- Retention Cohort 
+SELECT  cohort_date,
+        ROUND(100.00* t1 / t1 ,2) as t1,
+        ROUND(100.00* t2 / t1 ,2) as t2,
+        ROUND(100.00* t3 / t1 ,2) as t3,
+        ROUND(100.00* t4 / t1 ,2) as t4,
+		ROUND(100.00* t5 / t1 ,2) as t5,
+        ROUND(100.00* t6 / t1 ,2) as t6,
+        ROUND(100.00* t7 / t1 ,2) as t7,
+        ROUND(100.00* t8 / t1 ,2) as t8,
+		ROUND(100.00* t9 / t1 ,2) as t9,
+        ROUND(100.00* t10 / t1 ,2) as t10,
+        ROUND(100.00* t11 / t1 ,2) as t11,
+        ROUND(100.00* t12 / t1 ,2) as t12
+FROM B2_4
+
+-- Churn Cohort
+SELECT  cohort_date,
+        ROUND(100 - 100.00* t1 / t1 ,2) as t1,
+        ROUND(100 - 100.00* t2 / t1 ,2) as t2,
+        ROUND(100 - 100.00* t3 / t1 ,2) as t3,
+        ROUND(100 - 100.00* t4 / t1 ,2) as t4,
+		ROUND(100 - 100.00* t5 / t1 ,2) as t5,
+        ROUND(100 - 100.00* t6 / t1 ,2) as t6,
+        ROUND(100 - 100.00* t7 / t1 ,2) as t7,
+        ROUND(100 - 100.00* t8 / t1 ,2) as t8,
+		ROUND(100 - 100.00* t9 / t1 ,2) as t9,
+        ROUND(100 - 100.00* t10 / t1 ,2) as t10,
+        ROUND(100 - 100.00* t11 / t1 ,2) as t11,
+        ROUND(100 - 100.00* t12 / t1 ,2) as t12
+FROM B2_4
