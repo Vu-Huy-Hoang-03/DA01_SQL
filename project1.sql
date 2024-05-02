@@ -110,7 +110,7 @@ FROM SALES_DATASET_RFM_PRJ
 -- B2: MIN - MAX
 B2 AS (
 SELECT	(Q1-1.5*IQR) AS min,
-		(Q3-1.5*IQR) AS max
+		(Q3+1.5*IQR) AS max
 FROM B1
 )
 	
