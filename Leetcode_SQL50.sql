@@ -120,7 +120,7 @@ HAVING COUNT(a.managerId) >=5
 
 /* C2 */
 SELECT name FROM Employee
-WHERE id = (
+WHERE id IN (
             select managerId from employee 
             group by managerId 
             having count(id) >= 5
