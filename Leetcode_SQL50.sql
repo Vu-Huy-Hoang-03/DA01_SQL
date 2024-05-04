@@ -126,5 +126,16 @@ WHERE id IN (
             having count(id) >= 5
             )
 
+-- 1934. Confirmation Rate --------------------------------------------------------------------------------------------------------------------------------------
+-- output: user_id, confirmation_rate 
+SELECT  a.user_id,
+        ROUND(
+            AVG(CASE WHEN b.action = 'confirmed' THEN 1 ELSE 0 END)
+            ,2) as confirmation_rate 
+FROM signups as a
+LEFT JOIN confirmations as b
+    ON a.user_id = b.user_id
+GROUP BY a.user_id
+
 -- 
 
