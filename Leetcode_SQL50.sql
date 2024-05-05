@@ -137,5 +137,78 @@ LEFT JOIN confirmations as b
     ON a.user_id = b.user_id
 GROUP BY a.user_id
 
+-- 620. Not Boring Movies --------------------------------------------------------------------------------------------------------------------------------------
+-- output: id, movie, des, rating
+-- id số lẻ (!2=1), des <> 'boring' 
+SELECT * FROM Cinema
+WHERE id%2 <>0 AND description <> 'boring'
+ORDER BY rating DESC
+
+-- 1251. Average Selling Price ---------------------------------------------------------------------------------------------------------------------------------
+-- output: product_id, average_price = AVG(price*units / units)
+-- price: purchase_date BETWEEN start AND end
+SELECT  a.product_id, 
+        COALESCE(
+                ROUND(
+                    SUM(a.price * b.units) / 
+                    CAST(SUM(b.units) AS DECIMAL)
+                    ,2)
+                ,0) as average_price
+FROM prices as a
+LEFT JOIN unitssold as b
+    ON a.product_id = b.product_id
+    AND b.purchase_date BETWEEN a.start_date AND a.end_date
+GROUP BY a.product_id
+
+-- 1075. Project Employees I ---------------------------------------------------------------------------------------------------------------------------------
+-- output: project, average_years = AVG(experience_years) GROUP BY project_id
+SELECT a.project_id, ROUND(AVG(b.experience_years),2) as average_years
+FROM project as a
+INNER JOIN employee as b
+    ON a.employee_id = b.employee_id
+GROUP BY a.project_id
+
+-- 1633. Percentage of Users Attended a Contest --------------------------------------------------------------------------------------------------------------
+-- output: contest_id, percentage (% ppl join in that contest)
+SELECT  b.contest_id,
+        ROUND(
+            100.00* COUNT(a.user_id) 
+            / (SELECT COUNT(*) FROM users),2) as percentage 
+FROM users as a
+INNER JOIN register as b
+    ON a.user_id = b.user_id
+GROUP BY b.contest_id
+ORDER BY percentage DESC, contest_id ASC
+
+-- 1211. Queries Quality and Percentage -----------------------------------------------------------------------------------------------------------------------
+-- output: query_name, quality = SUM(position * rating) / COUNT(query_name)
+-- poor_query_percentage = COUNT(query_name) WHERE (rating<3) / COUNT(*)
+WITH query_perc AS (
+SELECT DISTINCT query_name,
+                ROUND(
+                    100.00 * COUNT(query_name) / 
+                    (SELECT COUNT(query_name) FROM queries  
+                    WHERE query_name = a.query_name GROUP BY query_name)
+                    ,2) as poor_query_percentage
+FROM queries as a
+WHERE rating <3
+GROUP BY query_name)
+
+SELECT  query_name, 
+        ROUND(
+            AVG(CAST(rating as DECIMAL) / position)
+            ,2) as quality,
+        COALESCE(
+            (SELECT poor_query_percentage FROM query_perc WHERE query_name = a.query_name)
+            ,0) as poor_query_percentage
+FROM queries as a
+WHERE query_name IS NOT NULL
+GROUP BY query_name
+
+
 -- 
+
+
+-- 
+
 
