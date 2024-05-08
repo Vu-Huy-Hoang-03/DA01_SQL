@@ -205,10 +205,82 @@ FROM queries as a
 WHERE query_name IS NOT NULL
 GROUP BY query_name
 
+-- 1193. Monthly Transactions I -------------------------------------------------------------------------------------------------------------------------------
+  -- CTE: Only Approved
+WITH approval AS (
+SELECT  TO_CHAR(trans_date, 'YYYY-MM') as month, 
+        country, COUNT(id) as approved_count, SUM(amount) AS approved_total_amount
+FROM Transactions
+WHERE state = 'approved'
+GROUP BY month, country
+)
+SELECT  TO_CHAR(a.trans_date, 'YYYY-MM') as month, 
+        a.country, COUNT(a.id) as trans_count, 
+        (SELECT b.approved_count FROM approval WHEN TO_CHAR(a.trans_date, 'YYYY-MM') = b.month AND a.country = b.country),                 
+        SUM(a.amount) AS trans_total_amount, 
+        (SELECT b.approved_total_amount FROM approval WHEN TO_CHAR(a.trans_date, 'YYYY-MM') = b.month AND a.country = b.country)
+FROM transactions as a           
+GROUP BY TO_CHAR(a.trans_date, 'YYYY-MM'), a.country
 
--- 
+-- 1141. User Activity for the Past 30 Days I ------------------------------------------------------------------------------------------------------------------
+-- output: day, active_users = COUNT(user_id)
+SELECT activity_date as day, COUNT(DISTINCT user_id) as active_users
+FROM activity
+WHERE activity_date BETWEEN ('2019-06-28')  AND '2019-07-27'
+GROUP BY activity_date
 
+-- 619. Biggest Single Number -----------------------------------------------------------------------------------------------------------------------------------
+SELECT MAX(num) as num
+FROM (
+SELECT  num,
+        COUNT(num) OVER(PARTITION BY num) as counting
+FROM MyNumbers) as tablet
+WHERE counting=1
 
--- 
+-- 180. Consecutive Numbers -------------------------------------------------------------------------------------------------------------------------------------
+-- output: ConsecutiveNums = COUNT(id) OVER(PARTITION BY num) 
+SELECT  DISTINCT num AS ConsecutiveNums
+FROM (
+SELECT  id, num, 
+        COUNT(id) OVER(PARTITION BY num) as amount
+FROM logs) as tablet
+WHERE amount >3
 
+-- 180. Consecutive Numbers ------------------------------------------------------------------------------------------------------------------------------------
+-- output: ConsecutiveNums = COUNT(id) OVER(PARTITION BY num) 
+-- consecutively = liên tục, liền mạch
 
+-- B1: LAG + LEAD (ORDER BY id) để tìm giá trị NUM phía trước/sau + COUNT(id) PARTITION BY num để tìm th trùng lặp
+-- B2: SubQuery ở FROM -> cho điện kiện = trước or bằng sau
+SELECT  DISTINCT num AS "ConsecutiveNums"
+FROM (
+SELECT  id, num, 
+        LAG(num,1) OVER(ORDER BY id) as pre_1,
+        LAG(num,2) OVER(ORDER BY id) as pre_2,
+        LEAD(num,1) OVER(ORDER BY id) as aft_1,
+        LEAD(num,2) OVER(ORDER BY id) as aft_2,
+        COUNT(id) OVER(PARTITION BY num) as amount
+FROM logs) as tablet
+WHERE   (num = pre_1 AND num = pre_2)
+        OR (num = aft_1 AND num = aft_2)
+
+-- 1907. Count Salary Categories -------------------------------------------------------------------------------------------------------------------------------
+-- output: category ; accounts_count
+
+(SELECT 'Low Salary' as category,
+        COUNT(*) as accounts_count
+FROM accounts
+WHERE income < 20000
+)
+UNION ALL
+(SELECT 'Average Salary' as category,
+        COUNT(*) as accounts_count
+FROM accounts
+WHERE income BETWEEN 20000 AND 50000
+)
+UNION ALL
+(SELECT 'High Salary' as category,
+        COUNT(*) as accounts_count
+FROM accounts
+WHERE income > 50000
+)
