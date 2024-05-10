@@ -206,21 +206,15 @@ WHERE query_name IS NOT NULL
 GROUP BY query_name
 
 -- 1193. Monthly Transactions I -------------------------------------------------------------------------------------------------------------------------------
-  -- CTE: Only Approved
-WITH approval AS (
-SELECT  TO_CHAR(trans_date, 'YYYY-MM') as month, 
-        country, COUNT(id) as approved_count, SUM(amount) AS approved_total_amount
-FROM Transactions
-WHERE state = 'approved'
-GROUP BY month, country
-)
-SELECT  TO_CHAR(a.trans_date, 'YYYY-MM') as month, 
-        a.country, COUNT(a.id) as trans_count, 
-        (SELECT b.approved_count FROM approval WHEN TO_CHAR(a.trans_date, 'YYYY-MM') = b.month AND a.country = b.country),                 
-        SUM(a.amount) AS trans_total_amount, 
-        (SELECT b.approved_total_amount FROM approval WHEN TO_CHAR(a.trans_date, 'YYYY-MM') = b.month AND a.country = b.country)
-FROM transactions as a           
-GROUP BY TO_CHAR(a.trans_date, 'YYYY-MM'), a.country
+-- CASE-WHEN
+SELECT  TO_CHAR(trans_date, 'yyyy-mm') as month,
+        country,
+        COUNT(id) as trans_count,
+        COUNT(CASE WHEN state = 'approved' THEN 1 END) as approved_count,
+        SUM(amount) as trans_total_amount,
+        SUM(CASE WHEN state = 'approved' THEN amount ELSE 0 END) as approved_total_amount
+FROM transactions
+GROUP BY TO_CHAR(trans_date, 'yyyy-mm'), country
 
 -- 1141. User Activity for the Past 30 Days I ------------------------------------------------------------------------------------------------------------------
 -- output: day, active_users = COUNT(user_id)
@@ -236,15 +230,6 @@ SELECT  num,
         COUNT(num) OVER(PARTITION BY num) as counting
 FROM MyNumbers) as tablet
 WHERE counting=1
-
--- 180. Consecutive Numbers -------------------------------------------------------------------------------------------------------------------------------------
--- output: ConsecutiveNums = COUNT(id) OVER(PARTITION BY num) 
-SELECT  DISTINCT num AS ConsecutiveNums
-FROM (
-SELECT  id, num, 
-        COUNT(id) OVER(PARTITION BY num) as amount
-FROM logs) as tablet
-WHERE amount >3
 
 -- 180. Consecutive Numbers ------------------------------------------------------------------------------------------------------------------------------------
 -- output: ConsecutiveNums = COUNT(id) OVER(PARTITION BY num) 
@@ -284,3 +269,40 @@ UNION ALL
 FROM accounts
 WHERE income > 50000
 )
+
+-- 626. Exchange Seats -------------------------------------------------------------------------------------------------------------------------------------------
+-- đổi chỗ 2 học sinh liền kề nhau (nếu tổng số hs là lẻ thì hs cuối k )
+
+SELECT  id, 
+        CASE
+            WHEN id%2=1 AND LEAD(student) OVER(ORDER BY id) IS NULL THEN student
+            WHEN id%2=0 THEN LAG(student) OVER(ORDER BY id)
+            WHEN id%2=1 THEN LEAD(student) OVER(ORDER BY id)
+        END as student
+FROM Seat
+
+-- 1789. Primary Department for Each Employee ----------------------------------------------------------------------------------------------------------------------
+-- OUTPUT: employee_ide, department_id (primary)
+/*  B1: CASE-WHEN đổi nhân viên làm ở 1 phòng ban thành 'Y'
+    B2: select where 'Y' */
+
+WITH yes AS (
+SELECT  employee_id, department_id,
+        CASE
+            WHEN COUNT(employee_id) OVER(PARTITION BY employee_id) = 1 THEN 'Y'
+            WHEN COUNT(employee_id) OVER(PARTITION BY employee_id) > 1 THEN primary_flag
+        END as new_flag
+FROM employee
+)
+SELECT  employee_id, department_id
+FROM yes
+WHERE new_flag = 'Y'
+
+-- 1527. Patients With a Condition ---------------------------------------------------------------------------------------------------------------------------------
+-- output: patient_id, patient_name,  conditions (LIKE '%DIAB1%')
+
+SELECT patient_id, patient_name, conditions
+FROM patients
+WHERE conditions LIKE 'DIAB1%'
+
+-- 
