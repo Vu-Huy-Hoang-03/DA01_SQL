@@ -303,6 +303,44 @@ WHERE new_flag = 'Y'
 
 SELECT patient_id, patient_name, conditions
 FROM patients
-WHERE conditions LIKE 'DIAB1%'
+WHERE   conditions LIKE '% DIAB1%'
+        OR conditions LIKE 'DIAB1%'
 
--- 
+-- 196. Delete Duplicate Emails -------------------------------------------------------------------------------------------------------------------------------------
+WITH dup AS (
+SELECT  *,
+        ROW_NUMBER() OVER(PARTITION BY email ORDER BY id) as ranking
+FROM person
+)
+DELETE FROM person
+WHERE id IN (SELECT id FROM dup WHERE ranking>1)
+
+-- 1517. Find Users With Valid E-Mails
+
+
+-- 1484. Group Sold Products By The Date -------------------------------------------------------------------------------------------------------------------------------
+-- output: sell_date, num_sold, products = STRING_AGG(product, ',') GROUP BY sell_date
+
+SELECT  sell_date,
+        COUNT(product) as num_sold,
+        STRING_AGG(
+                    product, ',' 
+                        ORDER BY product ASC) as products
+FROM (SELECT DISTINCT * FROM activities) as tablet
+GROUP BY sell_date
+ORDER BY sell_date 
+
+-- 176. Second Highest Salary ------------------------------------------------------------------------------------------------------------------------------------------
+-- output: salary (top2)
+
+SELECT salary as "SecondHighestSalary"
+FROM (
+SELECT  id, salary,
+        DENSE_RANK() OVER(ORDER BY salary DESC) as ranking
+FROM employee
+) as tablet
+WHERE ranking =2
+
+
+
+
