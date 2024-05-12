@@ -341,6 +341,12 @@ FROM employee
 ) as tablet
 WHERE ranking =2
 
+-- 1517. Find Users With Valid E-Mails -----------------------------------------------------------------------------------------------------------------------------------
+-- output: user_id, name, mail
+-- mail REGEXP '@leetcode.com$' AND mail REGEXP '^[A-Z a-z] [A-Z a-z 0-9 _.-]'
 
-
+SELECT *
+FROM users
+WHERE mail REGEXP '^[A-Z a-z] * [A-Z a-z 0-9 _.-] * '
+        AND mail REGEXP '@leetcode.com$'
 
