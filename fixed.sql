@@ -158,3 +158,72 @@ SELECT churn_perc, COUNT(brand) as n_brand
 FROM brand_analysis
 GROUP BY churn_perc
 ORDER BY churn_perc DESC
+-- product
+, number_churn AS (
+SELECT product_name, COUNT(id) as number_churn
+FROM step_3
+WHERE cus_category = 'churn'
+GROUP BY product_name
+)
+, number_all AS (
+SELECT product_name, COUNT(id) as number_all
+FROM step_3
+GROUP BY product_name
+ORDER BY number_all DESC
+)
+, product_analysis AS (
+SELECT 	a.*, b.number_churn,
+		ROUND(1.00 * b.number_churn / a.number_all , 2) as churn_perc
+FROM number_all AS a
+INNER JOIN number_churn AS b
+	ON a.product_name = b.product_name
+ORDER BY churn_perc DESC
+)
+
+SELECT churn_perc, COUNT(product_name) as n_product
+FROM product_analysis
+GROUP BY churn_perc
+ORDER BY churn_perc DESC
+-- n_product by amount of time that product is bought
+-- => mostly by 1 time | properly for testing
+, number_all AS (
+SELECT product_name, COUNT(id) as number_all
+FROM step_3
+GROUP BY product_name
+ORDER BY number_all DESC
+)
+SELECT number_all, COUNT(product_name) as n_product
+FROM number_all
+GROUP BY number_all
+ORDER BY number_all
+
+-- price group
+, price_group AS (
+SELECT 	*,
+		CASE
+			WHEN sale_price <= 100 THEN '0-100$'
+			WHEN sale_price <= 300 THEN '101-300$'
+			WHEN sale_price <= 700 THEN '301-700$'
+			ELSE '701-1000$'
+		END as price_group
+FROM step_3
+)
+, number_churn AS (
+SELECT price_group, COUNT(id) as number_churn
+FROM price_group
+WHERE cus_category = 'churn'
+GROUP BY price_group
+)
+, number_all AS (
+SELECT price_group, COUNT(id) as number_all
+FROM price_group
+GROUP BY price_group
+ORDER BY number_all DESC
+)
+
+SELECT 	a.*, b.number_churn,
+		ROUND(1.00 * b.number_churn / a.number_all , 2) as churn_perc
+FROM number_all AS a
+INNER JOIN number_churn AS b
+	ON a.price_group = b.price_group
+ORDER BY churn_perc DESC
